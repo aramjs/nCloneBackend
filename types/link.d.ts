@@ -1,0 +1,3 @@
+type ILink = {
+  id: string;
+};
