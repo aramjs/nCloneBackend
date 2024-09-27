@@ -37,4 +37,19 @@ export function getPaginatedData<T>(req: Request, data: T[]) {
   };
 }
 
+export function getSortParams(req: Request) {
+  try {
+    const sorting = req.query.sorting as string;
+
+    if (!sorting) return [];
+
+    return JSON.parse(sorting) as Array<{
+      sortBy: string;
+      sortDir: "desc" | "asc";
+    }>;
+  } catch (error) {
+    return [];
+  }
+}
+
 export type Pagination = ReturnType<typeof getPagination>;

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { comments, links, votes } from "../mockDB";
-import { getPaginatedData, promise } from "../utils";
+import { getPaginatedData, getSortParams, promise } from "../utils";
 import { faker } from "@faker-js/faker";
+import orderBy from "lodash/orderBy";
 
 export const createLink = async (
   req: Request<unknown, unknown, Pick<ILink, "title" | "image">>,
@@ -42,6 +43,8 @@ export const createLink = async (
 };
 
 export const getLinks = async (req: Request, res: Response): Promise<void> => {
+  const sorting = getSortParams(req);
+
   try {
     const data = links.map((link) => {
       const linkVotes = votes.filter((v) => v.linkId === link.id);
@@ -56,7 +59,16 @@ export const getLinks = async (req: Request, res: Response): Promise<void> => {
         userVote: linkVotes.find((v) => v.author.username === req.username),
       };
     });
-    const result = await promise(getPaginatedData(req, data));
+    const result = await promise(
+      getPaginatedData(
+        req,
+        orderBy(
+          data,
+          sorting.map((s) => s.sortBy),
+          sorting.map((s) => s.sortDir)
+        )
+      )
+    );
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: "Server Internal Error" });
