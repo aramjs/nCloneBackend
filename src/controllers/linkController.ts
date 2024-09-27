@@ -45,6 +45,8 @@ export const createLink = async (
 export const getLinks = async (req: Request, res: Response): Promise<void> => {
   const sorting = getSortParams(req);
 
+  const searchTerm = (req.query?.searchTerm as string) || "";
+
   try {
     const data = links.map((link) => {
       const linkVotes = votes.filter((v) => v.linkId === link.id);
@@ -66,6 +68,10 @@ export const getLinks = async (req: Request, res: Response): Promise<void> => {
           data,
           sorting.map((s) => s.sortBy),
           sorting.map((s) => s.sortDir)
+        ).filter(
+          (link) =>
+            link.title.includes(searchTerm) ||
+            link.author.username.includes(searchTerm)
         )
       )
     );
