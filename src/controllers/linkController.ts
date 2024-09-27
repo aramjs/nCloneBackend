@@ -3,6 +3,7 @@ import { comments, links, votes } from "../mockDB";
 import { getPaginatedData, getSortParams, promise } from "../utils";
 import { faker } from "@faker-js/faker";
 import orderBy from "lodash/orderBy";
+import { merge } from "lodash";
 
 export const createLink = async (
   req: Request<unknown, unknown, Pick<ILink, "title" | "image">>,
@@ -39,6 +40,26 @@ export const createLink = async (
     } else {
       res.status(500).json({ message: "An unexpected error occurred" });
     }
+  }
+};
+
+export const updateLink = async (req: Request, res: Response) => {
+  try {
+    const linkId = req.params.id;
+    const updates = req.body;
+
+    const link = links.find((link) => link.id === linkId);
+
+    if (!link) {
+      res.status(404).json({ message: "Link not found" });
+      return;
+    }
+
+    merge(link, updates);
+
+    res.status(200).json(link);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 };
 
