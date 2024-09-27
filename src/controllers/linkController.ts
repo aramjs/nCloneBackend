@@ -1,17 +1,36 @@
 import { Request, Response } from "express";
-import { links } from "../constants/links";
-import { promise } from "../utils";
+import { comments, links, votes } from "../mockDB";
+import { getPaginatedData, promise } from "../utils";
+import { faker } from "@faker-js/faker";
 
 export const createLink = async (
-  req: Request,
+  req: Request<unknown, unknown, Pick<ILink, "title" | "image">>,
   res: Response
 ): Promise<void> => {
   try {
-    const link = req.body as ILink;
+    const { title, image } = req.body;
 
-    await promise([...links, link]);
+    if (!title || !image) {
+      res.status(400).json({ error: "Title and image are required" });
+      return;
+    }
 
-    res.status(201).json(link);
+    const newLink: ILink = {
+      id: faker.database.mongodbObjectId(),
+      title: title,
+      image: image,
+      createdAt: new Date().toISOString(),
+      commentCount: 0,
+      author: { id: faker.database.mongodbObjectId(), username: req.username! },
+      userVote: null,
+      votesCount: 0,
+    };
+
+    links.unshift(newLink);
+
+    await promise(null);
+
+    res.status(201).json(newLink);
   } catch (error: unknown) {
     // Type assertion for error
     if (error instanceof Error) {
@@ -24,8 +43,21 @@ export const createLink = async (
 
 export const getLinks = async (req: Request, res: Response): Promise<void> => {
   try {
-    const list = await promise(links);
-    res.json(list);
+    const data = links.map((link) => {
+      const linkVotes = votes.filter((v) => v.linkId === link.id);
+      const linkComments = comments.filter(
+        (c) => c.linkId === link.id && !c.parentId
+      );
+
+      return {
+        ...link,
+        commentCount: linkComments.length,
+        votesCount: linkVotes.length,
+        userVote: linkVotes.find((v) => v.author.username === req.username),
+      };
+    });
+    const result = await promise(getPaginatedData(req, data));
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: "Server Internal Error" });
   }

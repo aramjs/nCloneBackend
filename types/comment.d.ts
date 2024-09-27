@@ -1,9 +1,10 @@
-type ILink = {
+type IComment = {
   id: string;
-  image: string;
-  title: string;
+  text: string;
   author: IAuthor;
   createdAt: string;
+  linkId: string;
+  parentId: string | null;
   commentCount?: number;
   votesCount?: number;
   userVote?: IVote | null;
