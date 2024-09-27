@@ -23,10 +23,7 @@ const generateVotes = (
   );
 };
 
-const generateComments = (
-  n: number,
-  { linkId, parentId }: Pick<IComment, "linkId" | "parentId">
-) => {
+const generateComments = (n: number, linkId: IComment["linkId"]) => {
   const result: IComment[] = [];
 
   Array.from({ length: n }).forEach(() => {
@@ -63,10 +60,7 @@ const generateMockData = (n: number) => {
     const commentCount = faker.number.int({ min: 20, max: 60 });
     const linkId = `${faker.database.mongodbObjectId()}`;
     const linkVotes = generateVotes(votesCount, linkId, null);
-    const linkComments = generateComments(commentCount, {
-      linkId,
-      parentId: null,
-    });
+    const linkComments = generateComments(commentCount, linkId);
 
     votes.push(...linkVotes);
     comments.push(...linkComments);

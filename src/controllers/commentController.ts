@@ -13,8 +13,9 @@ export const createComment = async (
 ): Promise<void> => {
   try {
     const { linkId, parentId, text } = req.body;
+    const isValid = text && (!!parentId || !!linkId);
 
-    if (!linkId || !parentId || !text) {
+    if (!isValid) {
       res.status(400).json({ error: "linkId/parentId/text are required" });
       return;
     }
